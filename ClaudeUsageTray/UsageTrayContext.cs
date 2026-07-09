@@ -5,7 +5,7 @@ namespace ClaudeUsageTray;
 
 public sealed class UsageTrayContext : ApplicationContext
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(5);
     private const int WarnThresholdPercent = 90;
 
     private readonly OAuthClient _oauth = new();

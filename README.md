@@ -52,8 +52,9 @@ self-contained). The app has no visible window; look for its icon in the system 
 5. Switch the display language under **Language** (German/English) — it defaults to
    your Windows UI language and remembers your choice.
 
-The app polls for updated usage roughly once a minute while it's running, and
-refreshes its access token automatically in the background.
+The app polls for updated usage every 5 minutes while it's running (plus whenever you
+double-click the icon or hit **Refresh now**), and refreshes its access token
+automatically in the background.
 
 ## Building from source
 
