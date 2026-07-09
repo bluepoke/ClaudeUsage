@@ -6,6 +6,11 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- CI builds this on ubuntu-latest; without this the SDK refuses to cross-target
+         net9.0-windows from a non-Windows OS (NETSDK1100). Publishing win-x64 still
+         works fine cross-platform since it's pure IL + native host, no Windows APIs
+         are actually invoked at build time. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>ClaudeUsageTray</AssemblyName>
     <RootNamespace>ClaudeUsageTray</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
