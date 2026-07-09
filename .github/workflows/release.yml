@@ -50,16 +50,19 @@ jobs:
           -p:Version=${{ steps.version.outputs.VERSION }}
           -o ./publish/${{ matrix.rid }}
 
+      - name: rename exe with version
+        run: mv publish/${{ matrix.rid }}/ClaudeUsageTray.exe publish/${{ matrix.rid }}/ClaudeUsageTray-${{ steps.version.outputs.VERSION }}.exe
+
       - name: zip artifact
         run: |
           cd publish/${{ matrix.rid }}
-          zip -r ../../ClaudeUsageTray-${{ matrix.rid }}.zip .
+          zip -r ../../ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.zip .
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClaudeUsageTray-${{ matrix.rid }}
-          path: ClaudeUsageTray-${{ matrix.rid }}.zip
+          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}
+          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.zip
 
   release:
     needs: build
