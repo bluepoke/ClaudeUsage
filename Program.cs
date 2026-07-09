@@ -1,3 +1,5 @@
+using ClaudeUsageTray.Localization;
+
 namespace ClaudeUsageTray;
 
 static class Program
@@ -12,8 +14,8 @@ static class Program
         if (!isNew)
         {
             MessageBox.Show(
-                "Claude Nutzung läuft bereits (siehe Systemtray).",
-                "Claude Nutzung",
+                Strings.InstanceAlreadyRunning,
+                Strings.AppTitle,
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
             return;

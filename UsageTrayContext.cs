@@ -1,4 +1,5 @@
 using ClaudeUsageTray.Auth;
+using ClaudeUsageTray.Localization;
 
 namespace ClaudeUsageTray;
 
@@ -18,6 +19,11 @@ public sealed class UsageTrayContext : ApplicationContext
     private readonly ToolStripMenuItem _loginItem;
     private readonly ToolStripMenuItem _logoutItem;
     private readonly ToolStripMenuItem _startupItem;
+    private readonly ToolStripMenuItem _refreshItem;
+    private readonly ToolStripMenuItem _exitItem;
+    private readonly ToolStripMenuItem _languageMenu;
+    private readonly ToolStripMenuItem _languageGermanItem;
+    private readonly ToolStripMenuItem _languageEnglishItem;
 
     private bool _sessionWarningShown;
     private bool _weeklyWarningShown;
@@ -27,33 +33,42 @@ public sealed class UsageTrayContext : ApplicationContext
     {
         _usageApi = new UsageApiClient(_oauth);
 
-        _sessionItem = new ToolStripMenuItem("Sitzung (5h): –") { Enabled = false };
-        _weeklyItem = new ToolStripMenuItem("Woche (7 Tage): –") { Enabled = false };
-        _statusItem = new ToolStripMenuItem("Nicht angemeldet") { Enabled = false };
-        _loginItem = new ToolStripMenuItem("Bei claude.ai anmelden…", null, OnLoginClicked);
-        _logoutItem = new ToolStripMenuItem("Abmelden", null, OnLogoutClicked) { Visible = false };
-        _startupItem = new ToolStripMenuItem("Bei Windows-Start ausführen", null, OnToggleStartup)
-        {
-            CheckOnClick = false,
-            Checked = StartupManager.IsEnabled(),
-        };
+        _sessionItem = new ToolStripMenuItem { Enabled = false };
+        _weeklyItem = new ToolStripMenuItem { Enabled = false };
+        _statusItem = new ToolStripMenuItem { Enabled = false };
+        _loginItem = new ToolStripMenuItem();
+        _loginItem.Click += OnLoginClicked;
+        _logoutItem = new ToolStripMenuItem { Visible = false };
+        _logoutItem.Click += OnLogoutClicked;
+        _startupItem = new ToolStripMenuItem { CheckOnClick = false, Checked = StartupManager.IsEnabled() };
+        _startupItem.Click += OnToggleStartup;
+        _refreshItem = new ToolStripMenuItem();
+        _refreshItem.Click += async (_, _) => await RefreshAsync();
+        _exitItem = new ToolStripMenuItem();
+        _exitItem.Click += (_, _) => ExitThread();
+
+        _languageGermanItem = new ToolStripMenuItem(Strings.MenuLanguageGerman, null, (_, _) => Strings.SetLanguage(AppLanguage.German));
+        _languageEnglishItem = new ToolStripMenuItem(Strings.MenuLanguageEnglish, null, (_, _) => Strings.SetLanguage(AppLanguage.English));
+        _languageMenu = new ToolStripMenuItem();
+        _languageMenu.DropDownItems.Add(_languageGermanItem);
+        _languageMenu.DropDownItems.Add(_languageEnglishItem);
 
         var menu = new ContextMenuStrip();
         menu.Items.Add(_sessionItem);
         menu.Items.Add(_weeklyItem);
         menu.Items.Add(_statusItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Jetzt aktualisieren", null, async (_, _) => await RefreshAsync());
+        menu.Items.Add(_refreshItem);
         menu.Items.Add(_loginItem);
         menu.Items.Add(_logoutItem);
         menu.Items.Add(_startupItem);
+        menu.Items.Add(_languageMenu);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Beenden", null, (_, _) => ExitThread());
+        menu.Items.Add(_exitItem);
 
         _notifyIcon = new NotifyIcon
         {
             Icon = TrayIconFactory.CreateUnavailableIcon(),
-            Text = "Claude Nutzung – nicht angemeldet",
             ContextMenuStrip = menu,
             Visible = true,
         };
@@ -63,8 +78,31 @@ public sealed class UsageTrayContext : ApplicationContext
         _timer.Tick += async (_, _) => await RefreshAsync();
         _timer.Start();
 
+        Strings.LanguageChanged += async () =>
+        {
+            ApplyStaticMenuTexts();
+            await RefreshAsync();
+        };
+
+        ApplyStaticMenuTexts();
         UpdateLoginMenuState();
         _ = RefreshAsync();
+    }
+
+    private void ApplyStaticMenuTexts()
+    {
+        _sessionItem.Text = Strings.MenuSessionEmpty;
+        _weeklyItem.Text = Strings.MenuWeeklyEmpty;
+        _statusItem.Text = Strings.MenuNotLoggedIn;
+        _loginItem.Text = Strings.MenuLogin;
+        _logoutItem.Text = Strings.MenuLogout;
+        _startupItem.Text = Strings.MenuStartup;
+        _refreshItem.Text = Strings.MenuRefresh;
+        _exitItem.Text = Strings.MenuExit;
+        _languageMenu.Text = Strings.MenuLanguage;
+        _languageGermanItem.Checked = Strings.Current == AppLanguage.German;
+        _languageEnglishItem.Checked = Strings.Current == AppLanguage.English;
+        _notifyIcon.Text = Strings.TooltipNotLoggedIn;
     }
 
     private async void OnLoginClicked(object? sender, EventArgs e)
@@ -72,14 +110,14 @@ public sealed class UsageTrayContext : ApplicationContext
         _loginItem.Enabled = false;
         try
         {
-            _notifyIcon.Text = "Claude Nutzung – Anmeldung läuft (Browser öffnet sich)…";
+            _notifyIcon.Text = Strings.TooltipLoggingIn;
             await _oauth.LoginAsync(CancellationToken.None);
             UpdateLoginMenuState();
             await RefreshAsync();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Anmeldung fehlgeschlagen:\n{ex.Message}", "Claude Nutzung",
+            MessageBox.Show(Strings.LoginFailed(ex.Message), Strings.AppTitle,
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
@@ -131,53 +169,36 @@ public sealed class UsageTrayContext : ApplicationContext
         {
             case UsageFetchStatus.NotLoggedIn:
                 SetIcon(TrayIconFactory.CreateUnavailableIcon());
-                _notifyIcon.Text = "Claude Nutzung – nicht angemeldet";
-                _sessionItem.Text = "Sitzung (5h): –";
-                _weeklyItem.Text = "Woche (7 Tage): –";
-                _statusItem.Text = "Rechtsklick > Anmelden";
+                _notifyIcon.Text = Strings.TooltipNotLoggedIn;
+                _sessionItem.Text = Strings.MenuSessionEmpty;
+                _weeklyItem.Text = Strings.MenuWeeklyEmpty;
+                _statusItem.Text = Strings.StatusPromptLogin;
                 UpdateLoginMenuState();
                 return;
 
             case UsageFetchStatus.AuthExpired:
                 _oauth.Logout();
                 SetIcon(TrayIconFactory.CreateUnavailableIcon());
-                _notifyIcon.Text = "Claude Nutzung – Anmeldung abgelaufen";
-                _statusItem.Text = "Bitte erneut anmelden";
+                _notifyIcon.Text = Strings.TooltipAuthExpired;
+                _statusItem.Text = Strings.StatusPleaseReauth;
                 UpdateLoginMenuState();
                 return;
 
             case UsageFetchStatus.NetworkError:
-                _statusItem.Text = $"Fehler beim Abrufen ({result.Error})";
+                _statusItem.Text = Strings.FetchError(result.Error ?? "");
                 return;
         }
 
         var snapshot = result.Snapshot!;
         SetIcon(TrayIconFactory.CreateUsageIcon(snapshot.SessionPercent, snapshot.WeeklyPercent));
 
-        _notifyIcon.Text = Truncate(
-            $"Claude Nutzung\nSitzung (5h): {snapshot.SessionPercent}%\nWoche (7 Tage): {snapshot.WeeklyPercent}%",
-            127);
+        _notifyIcon.Text = Truncate(Strings.TooltipSummary(snapshot.SessionPercent, snapshot.WeeklyPercent), 127);
 
-        _sessionItem.Text = $"Sitzung (5h): {snapshot.SessionPercent}%{FormatReset(snapshot.SessionResetsAt)}";
-        _weeklyItem.Text = $"Woche (7 Tage): {snapshot.WeeklyPercent}%{FormatReset(snapshot.WeeklyResetsAt)}";
-        _statusItem.Text = $"Stand: {snapshot.FetchedAt:HH:mm:ss}";
+        _sessionItem.Text = Strings.SessionLabel(snapshot.SessionPercent, Strings.FormatReset(snapshot.SessionResetsAt));
+        _weeklyItem.Text = Strings.WeeklyLabel(snapshot.WeeklyPercent, Strings.FormatReset(snapshot.WeeklyResetsAt));
+        _statusItem.Text = Strings.StatusUpdated(snapshot.FetchedAt);
 
         MaybeWarn(snapshot);
-    }
-
-    private static string FormatReset(DateTimeOffset? resetsAt)
-    {
-        if (resetsAt is not { } r)
-            return "";
-
-        var remaining = r - DateTimeOffset.Now;
-        var countdown = remaining <= TimeSpan.Zero
-            ? "in Kürze"
-            : remaining.TotalHours >= 1
-                ? $"in {(int)remaining.TotalHours}h {remaining.Minutes}min"
-                : $"in {Math.Max(remaining.Minutes, 1)}min";
-
-        return $" (bis {r.ToLocalTime():HH:mm}, {countdown})";
     }
 
     private void SetIcon(Icon icon)
@@ -191,8 +212,7 @@ public sealed class UsageTrayContext : ApplicationContext
     {
         if (snapshot.SessionPercent >= WarnThresholdPercent && !_sessionWarningShown)
         {
-            _notifyIcon.ShowBalloonTip(8000, "Claude Nutzung",
-                $"Sitzungslimit (5h) bei {snapshot.SessionPercent}%.", ToolTipIcon.Warning);
+            _notifyIcon.ShowBalloonTip(8000, Strings.AppTitle, Strings.BalloonSessionWarning(snapshot.SessionPercent), ToolTipIcon.Warning);
             _sessionWarningShown = true;
         }
         else if (snapshot.SessionPercent < WarnThresholdPercent)
@@ -202,8 +222,7 @@ public sealed class UsageTrayContext : ApplicationContext
 
         if (snapshot.WeeklyPercent >= WarnThresholdPercent && !_weeklyWarningShown)
         {
-            _notifyIcon.ShowBalloonTip(8000, "Claude Nutzung",
-                $"Wochenlimit bei {snapshot.WeeklyPercent}%.", ToolTipIcon.Warning);
+            _notifyIcon.ShowBalloonTip(8000, Strings.AppTitle, Strings.BalloonWeeklyWarning(snapshot.WeeklyPercent), ToolTipIcon.Warning);
             _weeklyWarningShown = true;
         }
         else if (snapshot.WeeklyPercent < WarnThresholdPercent)

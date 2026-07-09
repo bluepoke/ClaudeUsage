@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using ClaudeUsageTray.Localization;
 
 namespace ClaudeUsageTray.Auth;
 
@@ -39,7 +40,7 @@ public sealed class LoopbackListener : IDisposable
             }
         }
 
-        throw new InvalidOperationException("Konnte keinen lokalen Port für den OAuth-Redirect belegen.");
+        throw new InvalidOperationException(Strings.LoopbackNoPort);
     }
 
     public async Task<AuthCodeResult> WaitForRedirectAsync(CancellationToken cancellationToken)
@@ -65,8 +66,8 @@ public sealed class LoopbackListener : IDisposable
             parsed.GetValueOrDefault("error"));
 
         var body = result.Error is null
-            ? "<html><body style='font-family:sans-serif'><h2>Anmeldung erfolgreich</h2><p>Du kannst dieses Fenster jetzt schliessen und zur Claude Nutzung-App zurueckkehren.</p></body></html>"
-            : $"<html><body style='font-family:sans-serif'><h2>Anmeldung fehlgeschlagen</h2><p>{WebUtility.HtmlEncode(result.Error)}</p></body></html>";
+            ? $"<html><body style='font-family:sans-serif'><h2>{WebUtility.HtmlEncode(Strings.LoopbackSuccessTitle)}</h2><p>{WebUtility.HtmlEncode(Strings.LoopbackSuccessBody)}</p></body></html>"
+            : $"<html><body style='font-family:sans-serif'><h2>{WebUtility.HtmlEncode(Strings.LoopbackFailureTitle)}</h2><p>{WebUtility.HtmlEncode(result.Error)}</p></body></html>";
         var bodyBytes = Encoding.UTF8.GetBytes(body);
         var response = Encoding.ASCII.GetBytes(
             "HTTP/1.1 200 OK\r\n" +

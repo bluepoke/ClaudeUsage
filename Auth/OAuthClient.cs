@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using ClaudeUsageTray.Localization;
 
 namespace ClaudeUsageTray.Auth;
 
@@ -29,9 +30,9 @@ public sealed class OAuthClient
         var result = await listener.WaitForRedirectAsync(timeoutCts.Token);
 
         if (result.Error is not null)
-            throw new InvalidOperationException($"Anmeldung wurde abgelehnt: {result.Error}");
+            throw new InvalidOperationException(Strings.LoginRejected(result.Error));
         if (result.Code is null || result.State != state)
-            throw new InvalidOperationException("Ungueltige Antwort vom Login (Code oder State fehlt/stimmt nicht ueberein).");
+            throw new InvalidOperationException(Strings.LoginInvalidResponse);
 
         var tokenResponse = await ExchangeCodeAsync(result.Code, state, pkce.Verifier, redirectUri, cancellationToken);
         TokenStore.Save(ToTokenSet(tokenResponse));
@@ -83,7 +84,7 @@ public sealed class OAuthClient
             }
 
             var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken)
-                ?? throw new InvalidOperationException("Leere Antwort beim Token-Refresh.");
+                ?? throw new InvalidOperationException(Strings.TokenRefreshEmptyResponse);
 
             var refreshed = ToTokenSet(tokenResponse) with { RefreshToken = tokenResponse.RefreshToken ?? tokens.RefreshToken };
             TokenStore.Save(refreshed);
@@ -111,11 +112,11 @@ public sealed class OAuthClient
         if (!response.IsSuccessStatusCode)
         {
             var text = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new InvalidOperationException($"Token-Austausch fehlgeschlagen ({(int)response.StatusCode}): {text}");
+            throw new InvalidOperationException(Strings.TokenExchangeFailed((int)response.StatusCode, text));
         }
 
         return await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException("Leere Antwort beim Token-Austausch.");
+            ?? throw new InvalidOperationException(Strings.TokenExchangeEmptyResponse);
     }
 
     private static TokenSet ToTokenSet(TokenResponse response) => new(

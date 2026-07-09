@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using ClaudeUsageTray.Auth;
+using ClaudeUsageTray.Localization;
 
 namespace ClaudeUsageTray;
 
@@ -61,7 +62,7 @@ public sealed class UsageApiClient(OAuthClient oauth)
 
             var data = await response.Content.ReadFromJsonAsync<UsageApiResponse>(cancellationToken: cancellationToken);
             if (data is null)
-                return new UsageFetchResult(UsageFetchStatus.NetworkError, null, "Leere Antwort");
+                return new UsageFetchResult(UsageFetchStatus.NetworkError, null, Strings.UsageEmptyResponse);
 
             var snapshot = new UsageSnapshot(
                 data.FiveHour?.Percent ?? 0,
@@ -78,11 +79,11 @@ public sealed class UsageApiClient(OAuthClient oauth)
         }
         catch (TaskCanceledException)
         {
-            return new UsageFetchResult(UsageFetchStatus.NetworkError, null, "Zeitüberschreitung");
+            return new UsageFetchResult(UsageFetchStatus.NetworkError, null, Strings.UsageTimeout);
         }
         catch (System.Text.Json.JsonException ex)
         {
-            return new UsageFetchResult(UsageFetchStatus.NetworkError, null, $"Unerwartetes Antwortformat: {ex.Message}");
+            return new UsageFetchResult(UsageFetchStatus.NetworkError, null, Strings.UsageUnexpectedFormat(ex.Message));
         }
     }
 }
