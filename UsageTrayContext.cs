@@ -24,6 +24,7 @@ public sealed class UsageTrayContext : ApplicationContext
     private readonly ToolStripMenuItem _languageMenu;
     private readonly ToolStripMenuItem _languageGermanItem;
     private readonly ToolStripMenuItem _languageEnglishItem;
+    private readonly ToolStripMenuItem _versionItem;
 
     private bool _sessionWarningShown;
     private bool _weeklyWarningShown;
@@ -53,6 +54,8 @@ public sealed class UsageTrayContext : ApplicationContext
         _languageMenu.DropDownItems.Add(_languageGermanItem);
         _languageMenu.DropDownItems.Add(_languageEnglishItem);
 
+        _versionItem = new ToolStripMenuItem { Enabled = false };
+
         var menu = new ContextMenuStrip();
         menu.Items.Add(_sessionItem);
         menu.Items.Add(_weeklyItem);
@@ -64,6 +67,7 @@ public sealed class UsageTrayContext : ApplicationContext
         menu.Items.Add(_startupItem);
         menu.Items.Add(_languageMenu);
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(_versionItem);
         menu.Items.Add(_exitItem);
 
         _notifyIcon = new NotifyIcon
@@ -102,6 +106,7 @@ public sealed class UsageTrayContext : ApplicationContext
         _languageMenu.Text = Strings.MenuLanguage;
         _languageGermanItem.Checked = Strings.Current == AppLanguage.German;
         _languageEnglishItem.Checked = Strings.Current == AppLanguage.English;
+        _versionItem.Text = Strings.VersionLabel(AppInfo.Version);
         _notifyIcon.Text = Strings.TooltipNotLoggedIn;
     }
 
