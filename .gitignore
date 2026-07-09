@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio / Rider user-specific files
+.vs/
+.idea/
+*.user
+*.suo
+
+# Publish output
+publish/
+*.pubxml
+*.pubxml.user
+
+# OS clutter
+Thumbs.db
+.DS_Store
