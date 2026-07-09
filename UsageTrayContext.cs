@@ -192,7 +192,9 @@ public sealed class UsageTrayContext : ApplicationContext
         var snapshot = result.Snapshot!;
         SetIcon(TrayIconFactory.CreateUsageIcon(snapshot.SessionPercent, snapshot.WeeklyPercent));
 
-        _notifyIcon.Text = Truncate(Strings.TooltipSummary(snapshot.SessionPercent, snapshot.WeeklyPercent), 127);
+        _notifyIcon.Text = Truncate(
+            Strings.TooltipSummary(snapshot.SessionPercent, snapshot.SessionResetsAt, snapshot.WeeklyPercent, snapshot.WeeklyResetsAt),
+            127);
 
         _sessionItem.Text = Strings.SessionLabel(snapshot.SessionPercent, Strings.FormatReset(snapshot.SessionResetsAt));
         _weeklyItem.Text = Strings.WeeklyLabel(snapshot.WeeklyPercent, Strings.FormatReset(snapshot.WeeklyResetsAt));

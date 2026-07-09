@@ -32,7 +32,7 @@ public static class Strings
     public static string AppTitle => T("Claude Nutzung", "Claude Usage");
 
     public static string MenuSessionEmpty => T("Sitzung (5h): –", "Session (5h): –");
-    public static string MenuWeeklyEmpty => T("Woche (7 Tage): –", "Week (7 days): –");
+    public static string MenuWeeklyEmpty => T("Woche: –", "Week: –");
     public static string MenuNotLoggedIn => T("Nicht angemeldet", "Not logged in");
     public static string MenuLogin => T("Bei claude.ai anmelden…", "Log in with claude.ai…");
     public static string MenuLogout => T("Abmelden", "Log out");
@@ -85,14 +85,48 @@ public static class Strings
     public static string FetchError(string error) => T($"Fehler beim Abrufen ({error})", $"Error fetching data ({error})");
     public static string StatusUpdated(DateTimeOffset time) => T($"Stand: {time:HH:mm:ss}", $"Updated: {time:HH:mm:ss}");
 
-    public static string TooltipSummary(int sessionPercent, int weeklyPercent) => T(
-        $"Claude Nutzung\nSitzung (5h): {sessionPercent}%\nWoche (7 Tage): {weeklyPercent}%",
-        $"Claude Usage\nSession (5h): {sessionPercent}%\nWeek (7 days): {weeklyPercent}%");
+    public static string TooltipSummary(int sessionPercent, DateTimeOffset? sessionResetsAt, int weeklyPercent, DateTimeOffset? weeklyResetsAt)
+    {
+        var sessionRemaining = FormatCompactRemaining(sessionResetsAt);
+        var weeklyRemaining = FormatCompactRemaining(weeklyResetsAt);
+        return T(
+            $"Claude Nutzung\nSitzung (5h): {sessionPercent}%{sessionRemaining}\nWoche: {weeklyPercent}%{weeklyRemaining}",
+            $"Claude Usage\nSession (5h): {sessionPercent}%{sessionRemaining}\nWeek: {weeklyPercent}%{weeklyRemaining}");
+    }
+
+    /// <summary>Shortest-possible remaining time, e.g. " (1.5h)" or " (2d3h)", for the tooltip.</summary>
+    private static string FormatCompactRemaining(DateTimeOffset? resetsAt)
+    {
+        if (resetsAt is not { } r)
+            return "";
+
+        var remaining = r - DateTimeOffset.Now;
+        if (remaining <= TimeSpan.Zero)
+            return "";
+
+        string duration;
+        if (remaining.TotalDays >= 1)
+        {
+            var days = (int)remaining.TotalDays;
+            var hours = remaining.Hours;
+            duration = hours > 0 ? $"{days}d{hours}h" : $"{days}d";
+        }
+        else if (remaining.TotalHours >= 1)
+        {
+            duration = $"{remaining.TotalHours.ToString("0.#", CultureInfo.InvariantCulture)}h";
+        }
+        else
+        {
+            duration = $"{Math.Max(remaining.Minutes, 1)}min";
+        }
+
+        return $" ({duration})";
+    }
 
     public static string SessionLabel(int percent, string resetSuffix) =>
         T($"Sitzung (5h): {percent}%{resetSuffix}", $"Session (5h): {percent}%{resetSuffix}");
     public static string WeeklyLabel(int percent, string resetSuffix) =>
-        T($"Woche (7 Tage): {percent}%{resetSuffix}", $"Week (7 days): {percent}%{resetSuffix}");
+        T($"Woche: {percent}%{resetSuffix}", $"Week: {percent}%{resetSuffix}");
 
     public static string FormatReset(DateTimeOffset? resetsAt)
     {
