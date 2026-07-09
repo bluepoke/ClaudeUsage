@@ -53,13 +53,13 @@ jobs:
       - name: zip artifact
         run: |
           cd publish/${{ matrix.rid }}
-          zip -r ../../MeinProjekt-${{ matrix.rid }}.zip .
+          zip -r ../../ClaudeUsageTray-${{ matrix.rid }}.zip .
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MeinProjekt-${{ matrix.rid }}
-          path: MeinProjekt-${{ matrix.rid }}.zip
+          name: ClaudeUsageTray-${{ matrix.rid }}
+          path: ClaudeUsageTray-${{ matrix.rid }}.zip
 
   release:
     needs: build
