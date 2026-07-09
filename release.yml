@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish (self-contained, single file)
         run: >
-          dotnet publish ./src/MeinProjekt/MeinProjekt.csproj
+          dotnet publish ./ClaudeUsageTray/ClaudeUsageTray.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained true
