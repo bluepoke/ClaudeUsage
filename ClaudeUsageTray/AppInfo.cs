@@ -8,4 +8,6 @@ public static class AppInfo
         Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
         ?? "0.0.0";
+
+    public const string RepositoryUrl = "https://github.com/bluepoke/ClaudeUsage";
 }

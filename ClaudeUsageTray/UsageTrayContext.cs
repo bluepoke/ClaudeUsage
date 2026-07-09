@@ -25,6 +25,7 @@ public sealed class UsageTrayContext : ApplicationContext
     private readonly ToolStripMenuItem _languageGermanItem;
     private readonly ToolStripMenuItem _languageEnglishItem;
     private readonly ToolStripMenuItem _versionItem;
+    private readonly ToolStripMenuItem _githubItem;
 
     private bool _sessionWarningShown;
     private bool _weeklyWarningShown;
@@ -55,6 +56,9 @@ public sealed class UsageTrayContext : ApplicationContext
         _languageMenu.DropDownItems.Add(_languageEnglishItem);
 
         _versionItem = new ToolStripMenuItem { Enabled = false };
+        _githubItem = new ToolStripMenuItem();
+        _githubItem.Click += (_, _) =>
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AppInfo.RepositoryUrl) { UseShellExecute = true });
 
         var menu = new ContextMenuStrip();
         menu.Items.Add(_sessionItem);
@@ -67,6 +71,7 @@ public sealed class UsageTrayContext : ApplicationContext
         menu.Items.Add(_startupItem);
         menu.Items.Add(_languageMenu);
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(_githubItem);
         menu.Items.Add(_versionItem);
         menu.Items.Add(_exitItem);
 
@@ -107,6 +112,7 @@ public sealed class UsageTrayContext : ApplicationContext
         _languageGermanItem.Checked = Strings.Current == AppLanguage.German;
         _languageEnglishItem.Checked = Strings.Current == AppLanguage.English;
         _versionItem.Text = Strings.VersionLabel(AppInfo.Version);
+        _githubItem.Text = Strings.MenuGitHub;
         _notifyIcon.Text = Strings.TooltipNotLoggedIn;
     }
 
