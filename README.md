@@ -32,14 +32,25 @@ notification.
 
 ## Installation
 
-1. Download the latest `ClaudeUsageTray-<version>-win-x64.zip` from the
+Each release comes in two variants — pick one:
+
+- **`ClaudeUsageTray-<version>-win-x64.zip`** (self-contained) — no installer, no .NET
+  runtime to install separately. Larger download, but works out of the box.
+  Windows Defender might notify about an unknown publisher, though.
+- **`ClaudeUsageTray-<version>-win-x64-framework-dependent.zip`** (framework-dependent)
+  — much smaller download, but requires the
+  [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) to already
+  be installed.
+
+Then:
+
+1. Download your chosen zip from the
    [Releases](https://github.com/bluepoke/ClaudeUsage/releases) page.
 2. Unzip it anywhere (e.g. `C:\Tools\ClaudeUsageTray`).
-3. Run `ClaudeUsageTray-<version>.exe`.
+3. Run `ClaudeUsageTray.exe`.
 
-That's it — no installer, no .NET runtime to install separately (the release build is
-self-contained). The app has no visible window; look for its icon in the system tray
-(you may need to click the "show hidden icons" `^` arrow the first time).
+The app has no visible window; look for its icon in the system tray (you may need to
+click the "show hidden icons" `^` arrow the first time).
 
 ## Usage
 
@@ -69,7 +80,11 @@ dotnet build
 To produce a single-file release build like the ones in GitHub Releases:
 
 ```
+# self-contained (no .NET runtime required on the target machine)
 dotnet publish ClaudeUsageTray -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
+
+# framework-dependent (smaller, requires the .NET 9 Desktop Runtime on the target machine)
+dotnet publish ClaudeUsageTray -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 ```
 
 Releases are built automatically by [`.github/workflows/release.yml`](.github/workflows/release.yml)

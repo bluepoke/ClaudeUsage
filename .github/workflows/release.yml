@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         rid: [win-x64]   # [win-x64, linux-x64, osx-x64]
+        selfContained: [true, false]
 
     steps:
       - name: Checkout code
@@ -31,6 +32,17 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
+      - name: determine build variant
+        id: variant
+        run: |
+          if [ "${{ matrix.selfContained }}" = "true" ]; then
+            echo "SUFFIX=" >> "$GITHUB_OUTPUT"
+            echo "DIR=${{ matrix.rid }}-self-contained" >> "$GITHUB_OUTPUT"
+          else
+            echo "SUFFIX=-framework-dependent" >> "$GITHUB_OUTPUT"
+            echo "DIR=${{ matrix.rid }}-framework-dependent" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Restore
         run: dotnet restore
 
@@ -40,27 +52,27 @@ jobs:
       - name: Tests
         run: dotnet test -c Release --no-build --verbosity normal
 
-      - name: Publish (self-contained, single file)
+      - name: Publish (single file)
         run: >
           dotnet publish ./ClaudeUsageTray/ClaudeUsageTray.csproj
           -c Release
           -r ${{ matrix.rid }}
-          --self-contained true
+          --self-contained ${{ matrix.selfContained }}
           -p:PublishSingleFile=true
           -p:Version=${{ steps.version.outputs.VERSION }}
-          -o ./publish/${{ matrix.rid }}
+          -o ./publish/${{ steps.variant.outputs.DIR }}
 
       - name: zip artifact
         run: |
-          cp README.md publish/${{ matrix.rid }}/README.md
-          cd publish/${{ matrix.rid }}
-          zip -r ../../ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.zip .
+          cp README.md publish/${{ steps.variant.outputs.DIR }}/README.md
+          cd publish/${{ steps.variant.outputs.DIR }}
+          zip -r ../../ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip .
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}
-          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.zip
+          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}
+          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip
 
   release:
     needs: build
