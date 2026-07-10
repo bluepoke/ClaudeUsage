@@ -22,9 +22,6 @@ public static class TrayIconFactory
 
             DrawBar(g, sessionPercent, new Rectangle(1, 2, size - 2, 13));
             DrawBar(g, weeklyPercent, new Rectangle(1, 17, size - 2, 13));
-            // Drawn last as a faint watermark over everything, since the bars leave
-            // almost no empty background for a mark placed behind them to show through.
-            DrawClaudeMark(g, size / 2f, size / 2f, size / 2f);
         }
 
         return ToIcon(bitmap);
@@ -38,8 +35,6 @@ public static class TrayIconFactory
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Transparent);
-
-            DrawClaudeMark(g, size / 2f, size / 2f, size / 2f);
 
             using var pen = new Pen(Color.FromArgb(180, 200, 200, 200), 4f);
             var rect = new RectangleF(3, 3, size - 6, size - 6);
@@ -56,45 +51,12 @@ public static class TrayIconFactory
         return ToIcon(bitmap);
     }
 
-    // Claude's brand mark is a rounded 6-ray sparkle/asterisk. Drawn faint and behind
-    // the bars, it just hints at "this is Claude" without competing with the bars for
-    // attention - this is an homage sketch, not a reproduction of the official asset.
-    private static readonly Color ClaudeBrandColor = Color.FromArgb(217, 119, 87);
-
-    private static void DrawClaudeMark(Graphics g, float centerX, float centerY, float radius)
-    {
-        const int rayCount = 6;
-        const int alpha = 55;
-
-        var rayLength = radius * 0.95f;
-        var rayWidth = rayLength * 0.30f;
-
-        using var brush = new SolidBrush(Color.FromArgb(alpha, ClaudeBrandColor));
-        var state = g.Save();
-        g.TranslateTransform(centerX, centerY);
-        for (var i = 0; i < rayCount; i++)
-        {
-            g.RotateTransform(i == 0 ? 0f : 360f / rayCount);
-            using var path = new GraphicsPath();
-            path.AddPolygon(
-            [
-                new PointF(0, -rayWidth / 2f),
-                new PointF(rayLength * 0.7f, -rayWidth / 5f),
-                new PointF(rayLength, 0),
-                new PointF(rayLength * 0.7f, rayWidth / 5f),
-                new PointF(0, rayWidth / 2f),
-            ]);
-            g.FillPath(brush, path);
-        }
-        g.Restore(state);
-    }
-
     private static void DrawBar(Graphics g, int percent, Rectangle rect)
     {
         var clamped = Math.Clamp(percent, 0, 100);
 
         using (var trackPath = RoundedRect(rect, 4))
-        using (var trackBrush = new SolidBrush(Color.FromArgb(70, 255, 255, 255)))
+        using (var trackBrush = new SolidBrush(Color.FromArgb(127, Color.White)))
             g.FillPath(trackBrush, trackPath);
 
         var fillWidth = Math.Max((int)Math.Round(rect.Width * clamped / 100.0), clamped > 0 ? 6 : 0);
