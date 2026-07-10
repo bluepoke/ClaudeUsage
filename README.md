@@ -36,11 +36,12 @@ Each release comes in two variants — pick one:
 
 - **`ClaudeUsageTray-<version>-win-x64.zip`** (self-contained) — no installer, no .NET
   runtime to install separately. Larger download, but works out of the box.
-  Windows Defender might notify about an unknown publisher, though.
 - **`ClaudeUsageTray-<version>-win-x64-framework-dependent.zip`** (framework-dependent)
   — much smaller download, but requires the
   [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) to already
   be installed.
+
+Currently, **Windows Defender notifies about an unknown publisher**. I'm currently working to solve this issue.
 
 Then:
 
