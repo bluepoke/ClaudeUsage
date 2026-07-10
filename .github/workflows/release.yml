@@ -52,6 +52,7 @@ jobs:
 
       - name: zip artifact
         run: |
+          cp README.md publish/${{ matrix.rid }}/README.md
           cd publish/${{ matrix.rid }}
           zip -r ../../ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}.zip .
 
