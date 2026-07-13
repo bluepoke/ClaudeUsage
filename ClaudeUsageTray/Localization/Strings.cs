@@ -31,6 +31,8 @@ public static class Strings
 
     public static string AppTitle => T("Claude Nutzung", "Claude Usage");
 
+    public static string UserLabel(string email) => T($"Angemeldet als {email}", $"Logged in as {email}");
+
     public static string MenuSessionEmpty => T("Sitzung (5h): –", "Session (5h): –");
     public static string MenuWeeklyEmpty => T("Woche: –", "Week: –");
     public static string MenuNotLoggedIn => T("Nicht angemeldet", "Not logged in");

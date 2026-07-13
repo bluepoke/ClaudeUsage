@@ -15,6 +15,12 @@ public static class OAuthConfig
     public const string UsageUrl = "https://api.anthropic.com/api/oauth/usage";
 
     /// <summary>
+    /// Same account-profile endpoint the official CLI calls to resolve the signed-in
+    /// user's email - the access token itself carries no identity claims.
+    /// </summary>
+    public const string ProfileUrl = "https://api.anthropic.com/api/oauth/profile";
+
+    /// <summary>
     /// Minimal scope for a read-only usage viewer: identify the account and read its
     /// inference rate-limit status. Deliberately narrower than the full CLI scope set
     /// (which also covers MCP servers, file uploads, remote sessions, ...).

@@ -86,4 +86,70 @@ public sealed class UsageApiClient(OAuthClient oauth)
             return new UsageFetchResult(UsageFetchStatus.NetworkError, null, Strings.UsageUnexpectedFormat(ex.Message));
         }
     }
+
+    /// <summary>
+    /// Calls the same GET /api/oauth/profile endpoint the official CLI uses to resolve
+    /// the signed-in account's display name and email (neither is carried by the access
+    /// token itself). Returns "Name (email)", just the name, or just the email,
+    /// depending on what the account has set. Returns null on any failure - this is a
+    /// "nice to have" label, not critical data.
+    /// </summary>
+    public async Task<string?> FetchAccountNameAsync(CancellationToken cancellationToken)
+    {
+        var accessToken = await oauth.GetValidAccessTokenAsync(cancellationToken);
+        if (accessToken is null)
+            return null;
+
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, OAuthConfig.ProfileUrl);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            using var response = await _http.SendAsync(request, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await System.Text.Json.JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+
+            if (!document.RootElement.TryGetProperty("account", out var account))
+                return null;
+
+            string? name = null;
+            foreach (var property in new[] { "display_name", "full_name" })
+            {
+                if (account.TryGetProperty(property, out var value) &&
+                    value.GetString() is { Length: > 0 } text)
+                {
+                    name = text;
+                    break;
+                }
+            }
+
+            string? email = account.TryGetProperty("email", out var emailValue) &&
+                emailValue.GetString() is { Length: > 0 } emailText
+                    ? emailText
+                    : null;
+
+            return (name, email) switch
+            {
+                ({ } n, { } e) => $"{n} ({e})",
+                ({ } n, null) => n,
+                (null, { } e) => e,
+                _ => null,
+            };
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+        catch (TaskCanceledException)
+        {
+            return null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
+    }
 }

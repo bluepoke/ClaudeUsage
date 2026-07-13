@@ -13,6 +13,7 @@ public sealed class UsageTrayContext : ApplicationContext
 
     private readonly NotifyIcon _notifyIcon;
     private readonly System.Windows.Forms.Timer _timer;
+    private readonly ToolStripMenuItem _userItem;
     private readonly ToolStripMenuItem _sessionItem;
     private readonly ToolStripMenuItem _weeklyItem;
     private readonly ToolStripMenuItem _statusItem;
@@ -30,11 +31,13 @@ public sealed class UsageTrayContext : ApplicationContext
     private bool _sessionWarningShown;
     private bool _weeklyWarningShown;
     private bool _refreshInProgress;
+    private string? _cachedAccountName;
 
     public UsageTrayContext()
     {
         _usageApi = new UsageApiClient(_oauth);
 
+        _userItem = new ToolStripMenuItem { Enabled = false, Visible = false };
         _sessionItem = new ToolStripMenuItem { Enabled = false };
         _weeklyItem = new ToolStripMenuItem { Enabled = false };
         _statusItem = new ToolStripMenuItem { Enabled = false };
@@ -61,6 +64,7 @@ public sealed class UsageTrayContext : ApplicationContext
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AppInfo.RepositoryUrl) { UseShellExecute = true });
 
         var menu = new ContextMenuStrip();
+        menu.Items.Add(_userItem);
         menu.Items.Add(_sessionItem);
         menu.Items.Add(_weeklyItem);
         menu.Items.Add(_statusItem);
@@ -100,6 +104,8 @@ public sealed class UsageTrayContext : ApplicationContext
 
     private void ApplyStaticMenuTexts()
     {
+        if (_cachedAccountName is not null)
+            _userItem.Text = Strings.UserLabel(_cachedAccountName);
         _sessionItem.Text = Strings.MenuSessionEmpty;
         _weeklyItem.Text = Strings.MenuWeeklyEmpty;
         _statusItem.Text = Strings.MenuNotLoggedIn;
@@ -140,6 +146,8 @@ public sealed class UsageTrayContext : ApplicationContext
     private async void OnLogoutClicked(object? sender, EventArgs e)
     {
         _oauth.Logout();
+        _cachedAccountName = null;
+        _userItem.Visible = false;
         UpdateLoginMenuState();
         await RefreshAsync();
     }
@@ -167,6 +175,16 @@ public sealed class UsageTrayContext : ApplicationContext
         {
             var result = await _usageApi.FetchAsync(CancellationToken.None);
             ApplyResult(result);
+
+            if (result.Status == UsageFetchStatus.Ok && _cachedAccountName is null)
+            {
+                _cachedAccountName = await _usageApi.FetchAccountNameAsync(CancellationToken.None);
+                if (_cachedAccountName is not null)
+                {
+                    _userItem.Text = Strings.UserLabel(_cachedAccountName);
+                    _userItem.Visible = true;
+                }
+            }
         }
         finally
         {
@@ -181,6 +199,8 @@ public sealed class UsageTrayContext : ApplicationContext
             case UsageFetchStatus.NotLoggedIn:
                 SetIcon(TrayIconFactory.CreateUnavailableIcon());
                 _notifyIcon.Text = Strings.TooltipNotLoggedIn;
+                _userItem.Visible = false;
+                _cachedAccountName = null;
                 _sessionItem.Text = Strings.MenuSessionEmpty;
                 _weeklyItem.Text = Strings.MenuWeeklyEmpty;
                 _statusItem.Text = Strings.StatusPromptLogin;
@@ -191,6 +211,8 @@ public sealed class UsageTrayContext : ApplicationContext
                 _oauth.Logout();
                 SetIcon(TrayIconFactory.CreateUnavailableIcon());
                 _notifyIcon.Text = Strings.TooltipAuthExpired;
+                _userItem.Visible = false;
+                _cachedAccountName = null;
                 _statusItem.Text = Strings.StatusPleaseReauth;
                 UpdateLoginMenuState();
                 return;
