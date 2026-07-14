@@ -15,7 +15,7 @@
     <RootNamespace>ClaudeUsageTray</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Product>Claude Usage Tray</Product>
     <AssemblyTitle>Claude Usage Tray</AssemblyTitle>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>

@@ -89,13 +89,14 @@ public static class Strings
     public static string FetchError(string error) => T($"Fehler beim Abrufen ({error})", $"Error fetching data ({error})");
     public static string StatusUpdated(DateTimeOffset time) => T($"Stand: {time:HH:mm:ss}", $"Updated: {time:HH:mm:ss}");
 
-    public static string TooltipSummary(int sessionPercent, DateTimeOffset? sessionResetsAt, int weeklyPercent, DateTimeOffset? weeklyResetsAt)
+    public static string TooltipSummary(int sessionPercent, DateTimeOffset? sessionResetsAt, int weeklyPercent, DateTimeOffset? weeklyResetsAt, DateTimeOffset fetchedAt)
     {
         var sessionRemaining = FormatCompactRemaining(sessionResetsAt);
         var weeklyRemaining = FormatCompactRemaining(weeklyResetsAt);
+        var time = fetchedAt.ToLocalTime().ToString("HH:mm");
         return T(
-            $"Claude Nutzung\nSitzung (5h): {sessionPercent}%{sessionRemaining}\nWoche: {weeklyPercent}%{weeklyRemaining}",
-            $"Claude Usage\nSession (5h): {sessionPercent}%{sessionRemaining}\nWeek: {weeklyPercent}%{weeklyRemaining}");
+            $"Claude Nutzung ({time})\nSitzung (5h): {sessionPercent}%{sessionRemaining}\nWoche: {weeklyPercent}%{weeklyRemaining}",
+            $"Claude Usage ({time})\nSession (5h): {sessionPercent}%{sessionRemaining}\nWeek: {weeklyPercent}%{weeklyRemaining}");
     }
 
     /// <summary>Shortest-possible remaining time, e.g. " (1.5h)" or " (2d3h)", for the tooltip.</summary>
@@ -108,24 +109,30 @@ public static class Strings
         if (remaining <= TimeSpan.Zero)
             return "";
 
-        string duration;
+        return $" ({FormatDuration(remaining)})";
+    }
+
+    /// <summary>Shortest-possible duration, e.g. "1.5h", "45min", or "4d15h" - shared by the tooltip and the context menu.</summary>
+    private static string FormatDuration(TimeSpan remaining)
+    {
         if (remaining.TotalDays >= 1)
         {
             var days = (int)remaining.TotalDays;
             var hours = remaining.Hours;
-            duration = hours > 0 ? $"{days}d{hours}h" : $"{days}d";
-        }
-        else if (remaining.TotalHours >= 1)
-        {
-            duration = $"{remaining.TotalHours.ToString("0.#", CultureInfo.InvariantCulture)}h";
-        }
-        else
-        {
-            duration = $"{Math.Max(remaining.Minutes, 1)}min";
+            return hours > 0 ? $"{days}d{hours}h" : $"{days}d";
         }
 
-        return $" ({duration})";
+        if (remaining.TotalHours >= 1)
+            return $"{remaining.TotalHours.ToString("0.#", CultureInfo.InvariantCulture)}h";
+
+        return $"{Math.Max(remaining.Minutes, 1)}min";
     }
+
+    private static readonly string[] WeekdaysDe = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    private static readonly string[] WeekdaysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    private static string WeekdayName(DateTimeOffset local) =>
+        (Current == AppLanguage.German ? WeekdaysDe : WeekdaysEn)[(int)local.DayOfWeek];
 
     public static string SessionLabel(int percent, string resetSuffix) =>
         T($"Sitzung (5h): {percent}%{resetSuffix}", $"Session (5h): {percent}%{resetSuffix}");
@@ -138,14 +145,14 @@ public static class Strings
             return "";
 
         var remaining = r - DateTimeOffset.Now;
+        var localTime = r.ToLocalTime();
         var until = T("bis", "until");
+        var weekday = WeekdayName(localTime);
         var countdown = remaining <= TimeSpan.Zero
             ? T("in Kürze", "shortly")
-            : remaining.TotalHours >= 1
-                ? $"in {(int)remaining.TotalHours}h {remaining.Minutes}min"
-                : $"in {Math.Max(remaining.Minutes, 1)}min";
+            : $"in {FormatDuration(remaining)}";
 
-        return $" ({until} {r.ToLocalTime():HH:mm}, {countdown})";
+        return $" ({until} {weekday} {localTime:HH:mm}, {countdown})";
     }
 
     public static string BalloonSessionWarning(int percent) => T($"Sitzungslimit (5h) bei {percent}%.", $"Session limit (5h) at {percent}%.");

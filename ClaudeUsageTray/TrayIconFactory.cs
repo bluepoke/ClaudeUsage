@@ -27,6 +27,29 @@ public static class TrayIconFactory
         return ToIcon(bitmap);
     }
 
+    /// <summary>Same usage bars as <see cref="CreateUsageIcon"/>, dimmed and overlaid with a
+    /// spinning-refresh glyph, shown while a fetch is in flight.</summary>
+    public static Icon CreateRefreshingIcon(int sessionPercent, int weeklyPercent)
+    {
+        const int size = 32;
+        using var bitmap = new Bitmap(size, size);
+        using (var g = Graphics.FromImage(bitmap))
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(Color.Transparent);
+
+            DrawBar(g, sessionPercent, new Rectangle(1, 2, size - 2, 13));
+            DrawBar(g, weeklyPercent, new Rectangle(1, 17, size - 2, 13));
+
+            using var dimBrush = new SolidBrush(Color.FromArgb(150, 20, 20, 20));
+            g.FillRectangle(dimBrush, 0, 0, size, size);
+
+            DrawRefreshGlyph(g, size);
+        }
+
+        return ToIcon(bitmap);
+    }
+
     public static Icon CreateUnavailableIcon()
     {
         const int size = 32;
@@ -67,6 +90,39 @@ public static class TrayIconFactory
             using var fillBrush = new SolidBrush(ColorForPercent(clamped));
             g.FillPath(fillBrush, fillPath);
         }
+    }
+
+    /// <summary>Draws a clockwise circular-arrow ("refresh") glyph, centered in a square of the given size.</summary>
+    private static void DrawRefreshGlyph(Graphics g, int size)
+    {
+        var center = new PointF(size / 2f, size / 2f);
+        var radius = size * 0.30f;
+        var rect = new RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2);
+
+        const float startAngle = -50f;
+        const float sweepAngle = 280f;
+
+        using var pen = new Pen(Color.White, 3.2f) { StartCap = LineCap.Round, EndCap = LineCap.Round };
+        g.DrawArc(pen, rect, startAngle, sweepAngle);
+
+        // Arrowhead at the end of the arc, tangent to the circle in the direction of travel.
+        var thetaRad = (startAngle + sweepAngle) * Math.PI / 180.0;
+        var cos = (float)Math.Cos(thetaRad);
+        var sin = (float)Math.Sin(thetaRad);
+
+        var tip = new PointF(center.X + radius * cos, center.Y + radius * sin);
+        var tangent = new PointF(-sin, cos);
+        var radial = new PointF(cos, sin);
+
+        const float arrowLength = 7f;
+        const float arrowWidth = 6f;
+
+        var back = new PointF(tip.X - arrowLength * tangent.X, tip.Y - arrowLength * tangent.Y);
+        var wing1 = new PointF(back.X + arrowWidth / 2f * radial.X, back.Y + arrowWidth / 2f * radial.Y);
+        var wing2 = new PointF(back.X - arrowWidth / 2f * radial.X, back.Y - arrowWidth / 2f * radial.Y);
+
+        using var brush = new SolidBrush(Color.White);
+        g.FillPolygon(brush, [tip, wing1, wing2]);
     }
 
     private static GraphicsPath RoundedRect(Rectangle rect, int radius)

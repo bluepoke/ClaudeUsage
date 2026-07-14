@@ -32,6 +32,9 @@ public sealed class UsageTrayContext : ApplicationContext
     private bool _weeklyWarningShown;
     private bool _refreshInProgress;
     private string? _cachedAccountName;
+    private bool _hasUsageSnapshot;
+    private int _lastSessionPercent;
+    private int _lastWeeklyPercent;
 
     public UsageTrayContext()
     {
@@ -173,6 +176,9 @@ public sealed class UsageTrayContext : ApplicationContext
         _refreshInProgress = true;
         try
         {
+            if (_hasUsageSnapshot)
+                SetIcon(TrayIconFactory.CreateRefreshingIcon(_lastSessionPercent, _lastWeeklyPercent));
+
             var result = await _usageApi.FetchAsync(CancellationToken.None);
             ApplyResult(result);
 
@@ -201,6 +207,7 @@ public sealed class UsageTrayContext : ApplicationContext
                 _notifyIcon.Text = Strings.TooltipNotLoggedIn;
                 _userItem.Visible = false;
                 _cachedAccountName = null;
+                _hasUsageSnapshot = false;
                 _sessionItem.Text = Strings.MenuSessionEmpty;
                 _weeklyItem.Text = Strings.MenuWeeklyEmpty;
                 _statusItem.Text = Strings.StatusPromptLogin;
@@ -213,6 +220,7 @@ public sealed class UsageTrayContext : ApplicationContext
                 _notifyIcon.Text = Strings.TooltipAuthExpired;
                 _userItem.Visible = false;
                 _cachedAccountName = null;
+                _hasUsageSnapshot = false;
                 _statusItem.Text = Strings.StatusPleaseReauth;
                 UpdateLoginMenuState();
                 return;
@@ -223,10 +231,13 @@ public sealed class UsageTrayContext : ApplicationContext
         }
 
         var snapshot = result.Snapshot!;
+        _hasUsageSnapshot = true;
+        _lastSessionPercent = snapshot.SessionPercent;
+        _lastWeeklyPercent = snapshot.WeeklyPercent;
         SetIcon(TrayIconFactory.CreateUsageIcon(snapshot.SessionPercent, snapshot.WeeklyPercent));
 
         _notifyIcon.Text = Truncate(
-            Strings.TooltipSummary(snapshot.SessionPercent, snapshot.SessionResetsAt, snapshot.WeeklyPercent, snapshot.WeeklyResetsAt),
+            Strings.TooltipSummary(snapshot.SessionPercent, snapshot.SessionResetsAt, snapshot.WeeklyPercent, snapshot.WeeklyResetsAt, snapshot.FetchedAt),
             127);
 
         _sessionItem.Text = Strings.SessionLabel(snapshot.SessionPercent, Strings.FormatReset(snapshot.SessionResetsAt));
