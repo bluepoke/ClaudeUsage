@@ -17,9 +17,15 @@ The tray icon shows two stacked bars:
 Each bar is colour-coded (green ≤ 50%, yellow 50–80%, red > 80%) so you can tell your
 usage level without reading a number. Hover over the icon for exact percentages plus
 the time remaining until each window resets (e.g. `Session (5h): 37% (1.5h)`,
-`Week: 82% (2d3h)`). Right-click for the full menu: exact percentages with reset time,
+`Week: 82% (2d3h)`):
+
+![Tooltip showing session and week usage](screenshots/claude_usage_tooltip.png)
+
+Right-click for the full menu: signed-in account, exact percentages with reset day/time,
 manual refresh, login/logout, run-at-startup toggle, and a language switch
-(German/English).
+(German/English):
+
+![Right-click menu with account, usage, and app options](screenshots/claude_usage_rmb_menu.png)
 
 The app gets this data the same way the official `claude` CLI does: by signing you in
 with the same public OAuth client Claude Code uses, then calling the same
