@@ -42,8 +42,8 @@ notification.
 
 **Microsoft Store** (recommended — handles installs and updates automatically):
 
-- [apps.microsoft.com/detail/9NK00NML9J4F](https://apps.microsoft.com/detail/9NK00NML9J4F)
-- On Windows, this opens directly in the Store app: `ms-windows-store://pdp/?productid=9NK00NML9J4F`
+- [Install via Microsoft Store Website](https://apps.microsoft.com/detail/9NK00NML9J4F)
+- Install via Microsoft Store App: `ms-windows-store://pdp/?productid=9NK00NML9J4F`
 
 Or, install manually from a GitHub Release — each release comes in two variants, pick one:
 
