@@ -7,6 +7,8 @@ limits you've used — at a glance, without opening the Claude Desktop app.
 ![.NET](https://img.shields.io/badge/.NET-9-512BD4)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
+[Get it from the Microsoft Store](https://apps.microsoft.com/detail/9NK00NML9J4F)
+
 ## What it does
 
 The tray icon shows two stacked bars:
@@ -38,7 +40,12 @@ notification.
 
 ## Installation
 
-Each release comes in two variants — pick one:
+**Microsoft Store** (recommended — handles installs and updates automatically):
+
+- [apps.microsoft.com/detail/9NK00NML9J4F](https://apps.microsoft.com/detail/9NK00NML9J4F)
+- On Windows, this opens directly in the Store app: `ms-windows-store://pdp/?productid=9NK00NML9J4F`
+
+Or, install manually from a GitHub Release — each release comes in two variants, pick one:
 
 - **`ClaudeUsageTray-<version>-win-x64.zip`** (self-contained) — no installer, no .NET
   runtime to install separately. Larger download, but works out of the box.
@@ -47,7 +54,8 @@ Each release comes in two variants — pick one:
   [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) to already
   be installed.
 
-Currently, **Windows Defender notifies about an unknown publisher**. I'm currently working to solve this issue.
+For the manual zip route, **Windows Defender currently notifies about an unknown
+publisher** — the Microsoft Store version above doesn't have this problem.
 
 Then:
 
@@ -96,6 +104,21 @@ dotnet publish ClaudeUsageTray -c Release -r win-x64 --self-contained false -p:P
 
 Releases are built automatically by [`.github/workflows/release.yml`](.github/workflows/release.yml)
 whenever a tag matching `v*.*.*` is pushed.
+
+### MSIX package (Microsoft Store submission)
+
+The same workflow also builds an unsigned `.msix` package for submission to the
+Microsoft Store, from [`ClaudeUsageTray/Package/AppxManifest.xml`](ClaudeUsageTray/Package/AppxManifest.xml)
+and the placeholder icons in [`ClaudeUsageTray/Package/Assets`](ClaudeUsageTray/Package/Assets/).
+It's uploaded as a workflow artifact (not attached to the public GitHub Release), for
+manual upload to [Partner Center](https://partner.microsoft.com/dashboard) — the Store
+signs the package itself during certification, so no local code-signing certificate is
+needed.
+
+The app is registered in Partner Center as `PeterKossek.ClaudeUsageTray`, listed at
+[apps.microsoft.com/detail/9NK00NML9J4F](https://apps.microsoft.com/detail/9NK00NML9J4F).
+The only thing still worth doing manually: replace the placeholder icons in
+`ClaudeUsageTray/Package/Assets/` with real artwork (same file names/sizes).
 
 ## Privacy & security notes
 

@@ -74,6 +74,77 @@ jobs:
           name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}
           path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip
 
+  build-msix:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $parts = $version.Split('.')
+          $major = $parts[0]
+          $minor = if ($parts.Length -gt 1) { $parts[1] } else { "0" }
+          $build = if ($parts.Length -gt 2) { $parts[2] } else { "0" }
+          # MSIX Identity Version needs exactly 4 numeric parts; Store requires the last one to be 0.
+          $msixVersion = "$major.$minor.$build.0"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "MSIX_VERSION=$msixVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Publish
+        run: >
+          dotnet publish ./ClaudeUsageTray/ClaudeUsageTray.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:Version=${{ steps.version.outputs.VERSION }}
+          -o ./msix-staging
+
+      - name: Stage manifest and assets
+        shell: pwsh
+        run: |
+          Copy-Item ClaudeUsageTray/Package/AppxManifest.xml ./msix-staging/AppxManifest.xml
+          Copy-Item ClaudeUsageTray/Package/Assets ./msix-staging/Assets -Recurse
+          (Get-Content ./msix-staging/AppxManifest.xml -Raw) `
+            -replace 'Version="1\.0\.0\.0"', "Version=`"${{ steps.version.outputs.MSIX_VERSION }}`"" |
+            Set-Content ./msix-staging/AppxManifest.xml
+
+      # windows-latest ships the Windows SDK via its bundled Visual Studio install, but the
+      # exact SDK build number varies between runner image updates, so locate it dynamically
+      # rather than hardcoding a version.
+      - name: Locate makeappx.exe
+        id: sdktools
+        shell: pwsh
+        run: |
+          $makeappx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $makeappx) {
+            throw "makeappx.exe not found - Windows SDK missing on runner image."
+          }
+          echo "MAKEAPPX=$($makeappx.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Pack MSIX
+        shell: pwsh
+        run: |
+          & "${{ steps.sdktools.outputs.MAKEAPPX }}" pack /d ./msix-staging /p ./ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64.msix /o
+
+      # Unsigned on purpose: packages submitted through Partner Center for Store
+      # certification are signed by the Store during ingestion, not locally.
+      - name: upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64-msix
+          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64.msix
+
   release:
     needs: build
     runs-on: ubuntu-latest
