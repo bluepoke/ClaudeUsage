@@ -9,5 +9,5 @@ public static class AppInfo
         ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
         ?? "0.0.0";
 
-    public const string RepositoryUrl = "https://github.com/bluepoke/ClaudeUsage";
+    public const string RepositoryUrl = "https://github.com/bluepoke/AIQuota";
 }
