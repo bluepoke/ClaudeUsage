@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 public static class AppInfo
 {

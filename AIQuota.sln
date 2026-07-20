@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClaudeUsageTray", "ClaudeUsageTray\ClaudeUsageTray.csproj", "{94DF3145-82F9-4B8B-9002-16008D0DEF3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIQuota", "AIQuota\AIQuota.csproj", "{94DF3145-82F9-4B8B-9002-16008D0DEF3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

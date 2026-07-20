@@ -11,13 +11,13 @@
          works fine cross-platform since it's pure IL + native host, no Windows APIs
          are actually invoked at build time. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <AssemblyName>ClaudeUsageTray</AssemblyName>
-    <RootNamespace>ClaudeUsageTray</RootNamespace>
+    <AssemblyName>AIQuota</AssemblyName>
+    <RootNamespace>AIQuota</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <InvariantGlobalization>true</InvariantGlobalization>
     <Version>1.0.6</Version>
-    <Product>Claude Usage Tray</Product>
-    <AssemblyTitle>Claude Usage Tray</AssemblyTitle>
+    <Product>AI Quota</Product>
+    <AssemblyTitle>AI Quota</AssemblyTitle>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 

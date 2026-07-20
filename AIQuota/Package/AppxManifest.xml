@@ -21,7 +21,7 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>Claude Usage Tray</DisplayName>
+    <DisplayName>AI Quota</DisplayName>
     <PublisherDisplayName>Peter Kossek</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -36,9 +36,9 @@
   </Resources>
 
   <Applications>
-    <Application Id="ClaudeUsageTray" Executable="ClaudeUsageTray.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="AIQuota" Executable="AIQuota.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="Claude Usage Tray"
+        DisplayName="AI Quota"
         Description="Shows Claude.ai Pro/Max plan usage limits in the Windows system tray."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"

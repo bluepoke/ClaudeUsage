@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
-using ClaudeUsageTray.Localization;
+using AIQuota.Localization;
 
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 public sealed class OAuthClient
 {

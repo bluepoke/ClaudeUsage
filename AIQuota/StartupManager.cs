@@ -1,6 +1,6 @@
 using Microsoft.Win32;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 /// <summary>
 /// Toggles a per-user "run at Windows startup" entry via the classic Run registry key.
@@ -9,7 +9,7 @@ namespace ClaudeUsageTray;
 public static class StartupManager
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string ValueName = "ClaudeUsageTray";
+    private const string ValueName = "AIQuota";
 
     public static bool IsEnabled()
     {

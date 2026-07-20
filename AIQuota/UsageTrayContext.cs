@@ -1,7 +1,7 @@
-using ClaudeUsageTray.Auth;
-using ClaudeUsageTray.Localization;
+using AIQuota.Auth;
+using AIQuota.Localization;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 public sealed class UsageTrayContext : ApplicationContext
 {

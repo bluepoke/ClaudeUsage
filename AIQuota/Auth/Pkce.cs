@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 public sealed record PkcePair(string Verifier, string Challenge);
 

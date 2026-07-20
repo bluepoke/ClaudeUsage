@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 public sealed record TokenSet(
     [property: JsonPropertyName("access_token")] string AccessToken,

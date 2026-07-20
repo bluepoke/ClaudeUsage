@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
-using ClaudeUsageTray.Auth;
-using ClaudeUsageTray.Localization;
+using AIQuota.Auth;
+using AIQuota.Localization;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 public sealed record UsageWindow(
     [property: JsonPropertyName("utilization")] double Utilization,

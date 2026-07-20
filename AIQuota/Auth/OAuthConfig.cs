@@ -1,4 +1,4 @@
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 /// <summary>
 /// Endpoints and the public PKCE client id used by the official Claude Code CLI

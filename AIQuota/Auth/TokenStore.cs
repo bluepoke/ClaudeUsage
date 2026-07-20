@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 /// <summary>
 /// Persists the OAuth token this app obtained through its own login flow, encrypted
@@ -12,7 +12,7 @@ public static class TokenStore
 {
     private static readonly string FilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "ClaudeUsageTray",
+        "AIQuota",
         "oauth-token.dat");
 
     public static TokenSet? Load()

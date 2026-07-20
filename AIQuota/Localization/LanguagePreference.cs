@@ -1,11 +1,11 @@
 using Microsoft.Win32;
 
-namespace ClaudeUsageTray.Localization;
+namespace AIQuota.Localization;
 
 /// <summary>Persists an explicit language override, if the user picked one from the menu.</summary>
 internal static class LanguagePreference
 {
-    private const string KeyPath = @"Software\ClaudeUsageTray";
+    private const string KeyPath = @"Software\AIQuota";
     private const string ValueName = "Language";
 
     public static AppLanguage? Load()

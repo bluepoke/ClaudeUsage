@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace ClaudeUsageTray.Localization;
+namespace AIQuota.Localization;
 
 /// <summary>
 /// All user-visible text, in German and English. Defaults to the Windows UI language

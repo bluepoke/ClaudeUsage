@@ -1,4 +1,4 @@
-namespace ClaudeUsageTray.Localization;
+namespace AIQuota.Localization;
 
 public enum AppLanguage
 {

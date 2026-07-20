@@ -1,6 +1,6 @@
-using ClaudeUsageTray.Localization;
+using AIQuota.Localization;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 static class Program
 {
@@ -10,7 +10,7 @@ static class Program
     [STAThread]
     static void Main()
     {
-        using var singleInstanceGuard = new Mutex(initiallyOwned: true, "ClaudeUsageTray_SingleInstance", out var isNew);
+        using var singleInstanceGuard = new Mutex(initiallyOwned: true, "AIQuota_SingleInstance", out var isNew);
         if (!isNew)
         {
             MessageBox.Show(

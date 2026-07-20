@@ -54,7 +54,7 @@ jobs:
 
       - name: Publish (single file)
         run: >
-          dotnet publish ./ClaudeUsageTray/ClaudeUsageTray.csproj
+          dotnet publish ./AIQuota/AIQuota.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained ${{ matrix.selfContained }}
@@ -66,13 +66,13 @@ jobs:
         run: |
           cp README.md publish/${{ steps.variant.outputs.DIR }}/README.md
           cd publish/${{ steps.variant.outputs.DIR }}
-          zip -r ../../ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip .
+          zip -r ../../AIQuota-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip .
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}
-          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip
+          name: AIQuota-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}
+          path: AIQuota-${{ steps.version.outputs.VERSION }}-${{ matrix.rid }}${{ steps.variant.outputs.SUFFIX }}.zip
 
   build-msix:
     runs-on: windows-latest
@@ -101,7 +101,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish ./ClaudeUsageTray/ClaudeUsageTray.csproj
+          dotnet publish ./AIQuota/AIQuota.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -112,8 +112,8 @@ jobs:
       - name: Stage manifest and assets
         shell: pwsh
         run: |
-          Copy-Item ClaudeUsageTray/Package/AppxManifest.xml ./msix-staging/AppxManifest.xml
-          Copy-Item ClaudeUsageTray/Package/Assets ./msix-staging/Assets -Recurse
+          Copy-Item AIQuota/Package/AppxManifest.xml ./msix-staging/AppxManifest.xml
+          Copy-Item AIQuota/Package/Assets ./msix-staging/Assets -Recurse
           (Get-Content ./msix-staging/AppxManifest.xml -Raw) `
             -replace 'Version="1\.0\.0\.0"', "Version=`"${{ steps.version.outputs.MSIX_VERSION }}`"" |
             Set-Content ./msix-staging/AppxManifest.xml
@@ -135,15 +135,15 @@ jobs:
       - name: Pack MSIX
         shell: pwsh
         run: |
-          & "${{ steps.sdktools.outputs.MAKEAPPX }}" pack /d ./msix-staging /p ./ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64.msix /o
+          & "${{ steps.sdktools.outputs.MAKEAPPX }}" pack /d ./msix-staging /p ./AIQuota-${{ steps.version.outputs.VERSION }}-win-x64.msix /o
 
       # Unsigned on purpose: packages submitted through Partner Center for Store
       # certification are signed by the Store during ingestion, not locally.
       - name: upload MSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64-msix
-          path: ClaudeUsageTray-${{ steps.version.outputs.VERSION }}-win-x64.msix
+          name: AIQuota-${{ steps.version.outputs.VERSION }}-win-x64-msix
+          path: AIQuota-${{ steps.version.outputs.VERSION }}-win-x64.msix
 
   release:
     needs: build

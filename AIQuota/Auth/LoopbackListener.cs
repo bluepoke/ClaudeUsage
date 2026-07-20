@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using ClaudeUsageTray.Localization;
+using AIQuota.Localization;
 
-namespace ClaudeUsageTray.Auth;
+namespace AIQuota.Auth;
 
 public sealed record AuthCodeResult(string? Code, string? State, string? Error);
 

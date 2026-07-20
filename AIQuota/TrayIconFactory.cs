@@ -1,6 +1,6 @@
 using System.Drawing.Drawing2D;
 
-namespace ClaudeUsageTray;
+namespace AIQuota;
 
 /// <summary>
 /// Renders the small tray icon on the fly (two stacked progress bars - session on top,
